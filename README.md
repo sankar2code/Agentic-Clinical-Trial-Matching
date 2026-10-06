@@ -5,6 +5,8 @@ A deterministic, criterion-scored matching engine is the system of record for el
 
 Interactive mockup of the PRD (`Agentic_Clinical_Trial_Matching_AI_PRD.md`). Next.js App Router, TypeScript, no database. All patients, trials and results are synthetic.
 
+**Live demo: https://trialmatch.sankar.work** (hosted on Vercel; a push to `main` redeploys it).
+
 ```bash
 npm install
 npm run dev        # http://localhost:3100
