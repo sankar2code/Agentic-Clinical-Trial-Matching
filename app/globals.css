@@ -1,14 +1,23 @@
-:root {
-  --bg: #f4f6f9; --panel: #ffffff; --ink: #14202e; --muted: #5b6b7d; --line: #dfe5ec; --brand: #0b6e8a; --brand-ink: #ffffff; --brand-soft: #e3f2f6;
-  --met: #167a4a; --met-bg: #e2f5ea; --not: #b3261e; --not-bg: #fce8e6; --unk: #8a5a00; --unk-bg: #fff2d6; --rev: #6a3fb5; --rev-bg: #efe8fb; --pend: #4a5a6b; --pend-bg: #e8edf2;
-  --shadow: 0 1px 2px rgba(16, 32, 52, .06), 0 4px 14px rgba(16, 32, 52, .05);
+:root, .paper {
+  color-scheme: light;
+  --bg: #f6f6f7; --panel: #ffffff; --ink: #18181b; --muted: #62626c; --line: #e4e4e7; --brand: #0f766e; --brand-ink: #ffffff; --brand-soft: #e4f3f1;
+  --met: #167a4a; --met-bg: #e2f5ea; --not: #b3261e; --not-bg: #fce8e6; --unk: #8a5a00; --unk-bg: #fff2d6; --rev: #6a3fb5; --rev-bg: #efe8fb; --pend: #52525b; --pend-bg: #ececee;
+  --shadow: 0 1px 2px rgba(24, 24, 27, .06), 0 4px 14px rgba(24, 24, 27, .05);
 }
+/* Dark follows the system unless the person chose light with the toggle; choosing dark forces it. The two dark blocks must stay identical (the validation suite checks). */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e141b; --panel: #151d27; --ink: #e6edf4; --muted: #93a3b5; --line: #263344; --brand: #3fb3d1; --brand-ink: #06222b; --brand-soft: #14323c;
-    --met: #4cc58a; --met-bg: #12301f; --not: #ff8f87; --not-bg: #3a1815; --unk: #f0b94d; --unk-bg: #3a2c0c; --rev: #b69af0; --rev-bg: #2a2142; --pend: #a9b8c8; --pend-bg: #223040;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b0b0c; --panel: #141416; --ink: #ececef; --muted: #9d9da8; --line: #2a2a2f; --brand: #2dd4bf; --brand-ink: #05201c; --brand-soft: #0f2f2b;
+    --met: #4cc58a; --met-bg: #12301f; --not: #ff8f87; --not-bg: #3a1815; --unk: #f0b94d; --unk-bg: #3a2c0c; --rev: #b69af0; --rev-bg: #2a2142; --pend: #a1a1aa; --pend-bg: #27272a;
     --shadow: none;
   }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0b0c; --panel: #141416; --ink: #ececef; --muted: #9d9da8; --line: #2a2a2f; --brand: #2dd4bf; --brand-ink: #05201c; --brand-soft: #0f2f2b;
+  --met: #4cc58a; --met-bg: #12301f; --not: #ff8f87; --not-bg: #3a1815; --unk: #f0b94d; --unk-bg: #3a2c0c; --rev: #b69af0; --rev-bg: #2a2142; --pend: #a1a1aa; --pend-bg: #27272a;
+  --shadow: none;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif; }
@@ -96,7 +105,7 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--lin
 th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
 tr.sel td { background: var(--brand-soft); }
 
-.modalbg { position: fixed; inset: 0; background: rgba(5, 12, 20, .55); display: grid; place-items: center; z-index: 50; padding: 16px; }
+.modalbg { position: fixed; inset: 0; background: rgba(9, 9, 11, .55); display: grid; place-items: center; z-index: 50; padding: 16px; }
 .modal { background: var(--panel); border-radius: 14px; max-width: 640px; width: 100%; max-height: 88vh; overflow: auto; padding: 18px 20px; border: 1px solid var(--line); }
 .doc { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); padding: 12px; border-radius: 8px; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
 mark { background: #ffe58a; color: #1a1400; padding: 0 2px; border-radius: 3px; }

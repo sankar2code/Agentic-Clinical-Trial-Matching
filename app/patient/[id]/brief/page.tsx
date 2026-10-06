@@ -102,7 +102,7 @@ export default function Brief() {
             {handout && (
               <div className="paper">
                 {!approved && <p className="printonly draftmark">DRAFT: NOT APPROVED FOR SHARING</p>}
-                {!approved && <p className="small noprint" style={{ color: '#a33' }}>{outdated ? 'This text changed after it was approved (the trial moved between likely and near-eligible). Approve it again before sharing.' : 'Draft preview. Not approved for sharing.'}</p>}
+                {!approved && <p className="small noprint" style={{ color: 'var(--not)' }}>{outdated ? 'This text changed after it was approved (the trial moved between likely and near-eligible). Approve it again before sharing.' : 'Draft preview. Not approved for sharing.'}</p>}
                 <h1>{handout.title}</h1>
                 {handout.sections.map((sec, i) => <div key={i}>{sec.heading && <h2>{sec.heading}</h2>}<p>{sec.text}</p></div>)}
                 <h2>{handout.asksTitle}</h2>

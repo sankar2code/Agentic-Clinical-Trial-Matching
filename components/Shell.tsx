@@ -8,6 +8,7 @@ import { addDays } from '@/lib/expiry';
 import { MODE_INFO } from '@/lib/rollout';
 import { tourProgress } from '@/lib/tour';
 import { daysBetween } from '@/lib/engine';
+import { THEME_KEY, effectiveTheme, otherTheme, parseTheme, type Theme } from '@/lib/theme';
 import { Field } from '@/components/ui';
 import type { Role } from '@/lib/types';
 
@@ -105,6 +106,45 @@ function TimeTravel() {
   );
 }
 
+/**
+ * What the page is showing right now. The attribute holds a saved choice (set by the head script) or one made this session;
+ * with neither, the system decides. Read live rather than from React state, so a stale render can never flip the wrong way.
+ */
+const showingTheme = (): Theme => effectiveTheme(parseTheme(document.documentElement.getAttribute('data-theme')), window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+/** Light and dark for the whole app. With no choice the app follows the system; a choice is remembered on this device. */
+function ThemeToggle() {
+  // Unknown until mounted: the server cannot know the system setting, and the first client render must match the server's.
+  const [theme, setTheme] = useState<Theme | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const read = () => setTheme(showingTheme());
+    // Another tab saved a different choice (or cleared it): follow it.
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== THEME_KEY) return;
+      const chosen = parseTheme(e.newValue);
+      if (chosen) document.documentElement.setAttribute('data-theme', chosen); else document.documentElement.removeAttribute('data-theme');
+      read();
+    };
+    read();
+    mq.addEventListener('change', read);
+    window.addEventListener('storage', onStorage);
+    return () => { mq.removeEventListener('change', read); window.removeEventListener('storage', onStorage); };
+  }, []);
+  const toggle = () => {
+    const next = otherTheme(showingTheme());
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch { /* the choice still holds for this session */ }
+    setTheme(next);
+  };
+  const dark = theme === 'dark';
+  return (
+    <button className="btn sm" onClick={toggle} disabled={!theme} aria-label={!theme ? 'Theme' : dark ? 'Switch to light theme' : 'Switch to dark theme'} title={!theme ? '' : dark ? 'Switch to light theme' : 'Switch to dark theme'}>
+      <span aria-hidden="true">{dark ? '☀' : '☾'}</span><span className="hide-sm"> {!theme ? 'Theme' : dark ? 'Light' : 'Dark'}</span>
+    </button>
+  );
+}
+
 export default function Shell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const { s, setRole, versions, ready } = useApp();
@@ -144,6 +184,7 @@ export default function Shell({ children }: { children: ReactNode }) {
             {s.sim.rollback && <span className="chip review">Rolled back</span>}
             {sims.map((x) => <span key={x} className="chip sim" title="A scenario control is active">Scenario: {x}</span>)}
           </div>
+          <ThemeToggle />
           <div className="row rolebox">
             <label style={{ margin: 0 }} htmlFor="role">Demo role</label>
             <select id="role" value={s.role} onChange={(e) => setRole(e.target.value as Role)}>

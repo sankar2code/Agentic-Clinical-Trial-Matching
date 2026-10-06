@@ -14,6 +14,7 @@ import './checks/impact';
 import './checks/eval';
 import './checks/ops';
 import './checks/review';
+import './checks/theme';
 import { runAll, summary } from './harness';
 
 runAll().then(summary);

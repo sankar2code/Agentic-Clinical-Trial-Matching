@@ -10,7 +10,7 @@ Interactive mockup of the PRD (`Agentic_Clinical_Trial_Matching_AI_PRD.md`). Nex
 ```bash
 npm install
 npm run dev        # http://localhost:3100
-npm run validate   # about 4,200 checks across 19 groups
+npm run validate   # about 4,200 checks across 20 groups
 ```
 
 Start with the **Guided tour** (left nav, last item). It walks 21 steps through the product in the order a PRD reviewer would ask about them, and each step ticks itself when the app sees you do it.
@@ -43,6 +43,7 @@ Start with the **Guided tour** (left nav, last item). It walks 21 steps through 
 - `lib/engine.ts`: deterministic rules engine (Met / Not met / Unknown / Needs review, as-of dates, time windows, conflicts, pre-filter, ranking with a shown breakdown, audit snapshots and diffs). A Met needs a citation, including on a clinician override.
 - `lib/rules.ts`: the shared rule validator, used by the reviewer UI, `/api/criteria` and the engine, so a malformed rule can never silently turn every patient into Not met.
 - `lib/agent.ts`, `lib/guards.ts`, `lib/verify.ts`: the mock agent (read-only tools, step cap, injection scan, patient scope, span check) and its controls. `app/api/agent` streams it over server-sent events. The span check reads a value the way a person would: a PD-L1 score is a percentage (never the 22C3 assay clone), ECOG follows the word ECOG, a stage is a whole token (IIB is not found inside IIIB), and only the first reading stated counts.
+- `lib/theme.ts` and `app/globals.css`: the light/dark theme. Every color is a CSS variable (graphite and teal), so one attribute on the page switches the whole app; a head script applies a saved choice before the first paint. The validation suite measures WCAG contrast for every text pairing in both themes and fails if a component hard-codes a color.
 - `lib/perm.ts`: roles, permissions and the shadow-mode rule. Decisions (overrides, dismissals, approvals, adjudication, handouts, drafts) are paused while the as-of date is simulated, so nothing can be recorded against a chart that is not the real one.
 - `lib/chain.ts`, `lib/sha.ts`, `lib/replay.ts`: the hash chain, anchors and replay.
 - `lib/eval.ts`, `lib/golden.ts`, `lib/rollout.ts`, `lib/ops.ts`, `lib/funnel.ts`: the evaluation and operations logic. All are pure functions, so the validation suite tests them directly.
@@ -60,4 +61,5 @@ An independent read-only review of the thirteen added features found 17 issues. 
 - **Demo role** (top right) switches between oncologist, coordinator, PI, informaticist and governance. You stay on the same screen, so you can compare permissions.
 - **Scenario controls** (bottom right) force an agent timeout or outage, an EHR outage or rate limit, a rollback, a PD-L1 extraction failure, new lab, report or trial events, and exhaust the per-user agent quota.
 - **Date chip** (top bar) is time travel. **Mode chip** shows the rollout mode.
+- **Theme button** (top bar) switches between light and dark for the whole app. With no choice it follows your system setting; a choice is remembered on this device.
 - Each patient on the EHR schedule demonstrates a different PRD scenario; the tags on each row name it.
