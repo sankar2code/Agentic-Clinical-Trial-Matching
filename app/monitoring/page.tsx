@@ -42,7 +42,7 @@ export default function Monitoring() {
       <div className="card">
         <div className="row between wrap">
           <div><b>Run the nightly sync</b><div className="small muted">Pulls the next trial record update. A changed criterion goes back to review under a new id and is not evaluated until a reviewer approves it, so no one stays likely eligible on a rule that no longer exists.</div></div>
-          <button className="btn pri" disabled={waiting.length === 0 || !can('sync')} title={can('sync') ? '' : PERM_HINT.sync} onClick={applyNextAmendment}>{waiting.length ? `Sync next update (${waiting[0].id}: ${TRIALS.find((x) => x.id === waiting[0].trialId)?.code})` : 'Up to date'}</button>
+          <button className="btn pri" data-tour="mon-sync" disabled={waiting.length === 0 || !can('sync')} title={can('sync') ? '' : PERM_HINT.sync} onClick={applyNextAmendment}>{waiting.length ? `Sync next update (${waiting[0].id}: ${TRIALS.find((x) => x.id === waiting[0].trialId)?.code})` : 'Up to date'}</button>
         </div>
       </div>
       {s.amendments.map((ap) => {
@@ -50,7 +50,7 @@ export default function Monitoring() {
         const base = TRIALS.find((x) => x.id === a.trialId)!;
         const rows = describeAmendment(base, a);
         return (
-          <div className="card" key={a.id} style={{ marginTop: 10 }}>
+          <div className="card" key={a.id} data-tour="mon-amendment" style={{ marginTop: 10 }}>
             <div className="row between wrap"><div className="row wrap"><b>{base.code}</b><span className="chip review">{a.id} · {a.version}</span><span className={`chip ${a.effect === 'widens' ? 'met' : 'unknown'}`}>{a.effect} the population</span></div><span className="small muted">posted {a.postedOn} · {a.source}</span></div>
             <p className="small" style={{ margin: '6px 0' }}>{a.summary}</p>
             <table>
@@ -69,14 +69,14 @@ export default function Monitoring() {
 
       <Sec title="Fire an event" />
       <div className="gridc">
-        <div className="card"><h3>New lab result</h3><p className="small muted">eGFR 68 arrives for Robert Alvarez, replacing the stale 41-day-old value.</p><button className="btn pri sm" onClick={simLab} disabled={s.events.some((e) => e.kind === 'lab')}>Send event</button></div>
+        <div className="card"><h3>New lab result</h3><p className="small muted">eGFR 68 arrives for Robert Alvarez, replacing the stale 41-day-old value.</p><button className="btn pri sm" data-tour="mon-lab" onClick={simLab} disabled={s.events.some((e) => e.kind === 'lab')}>Send event</button></div>
         <div className="card"><h3>New report scanned</h3><p className="small muted">The Guardant360 report for Priya Raman lands in the chart, resolving the KRAS Unknown.</p><button className="btn pri sm" onClick={simReport} disabled={s.events.some((e) => e.kind === 'report')}>Send event</button></div>
         <div className="card"><h3>New trial opens</h3><p className="small muted">NOVA-SHP2 syncs from ClinicalTrials.gov. Its rules queue for review before anyone can be called eligible.</p><button className="btn pri sm" onClick={simTrial} disabled={s.opened.includes('t9')}>Send event</button></div>
       </div>
       {s.opened.includes('t9') && <Banner tone="rev">NOVA-SHP2 is waiting in <Link href="/admin/criteria">Criteria review</Link>. Approve its rules as the informaticist; each approval re-screens the cohort and lands in the feed below.</Banner>}
       <Sec title="Event feed" count={ev.length} />
       {ev.length === 0 ? <div className="card muted">No events yet.</div> : (
-        <div className="col">{ev.map((e) => (
+        <div className="col" data-tour="mon-feed">{ev.map((e) => (
           <div className="card" key={e.id}>
             <div className="row between"><span className="chip brand">{e.kind}</span><span className="small muted">{e.ts.replace('T', ' ').slice(0, 19)}</span></div>
             <p style={{ margin: '6px 0' }}>{e.text}</p>

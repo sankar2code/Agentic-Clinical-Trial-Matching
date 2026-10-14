@@ -156,7 +156,7 @@ export default function PatientTrials() {
 
       <div className="tabs" role="tablist">
         <button role="tab" aria-selected={tab === 'trials'} className={tab === 'trials' ? 'on' : ''} onClick={() => setTab('trials')}>Trials</button>
-        <button role="tab" aria-selected={tab === 'path'} className={tab === 'path' ? 'on' : ''} onClick={() => { setTab('path'); markTour('path'); }}>Path to eligibility</button>
+        <button role="tab" data-tour="tab-path" aria-selected={tab === 'path'} className={tab === 'path' ? 'on' : ''} onClick={() => { setTab('path'); markTour('path'); }}>Path to eligibility</button>
         <button role="tab" aria-selected={tab === 'chart'} className={tab === 'chart' ? 'on' : ''} onClick={() => setTab('chart')}>Chart data used</button>
       </div>
 

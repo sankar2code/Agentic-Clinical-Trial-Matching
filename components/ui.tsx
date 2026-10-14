@@ -68,13 +68,13 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 }
 
 /** Edits are held locally and committed once (on blur or Save), so the audit log records one edit, not one per keystroke. */
-export function DraftEditor({ value, disabled, label, onCommit }: { value: string; disabled?: boolean; label: string; onCommit: (v: string) => void }) {
+export function DraftEditor({ value, disabled, label, onCommit, tour }: { value: string; disabled?: boolean; label: string; onCommit: (v: string) => void; tour?: string }) {
   const [v, setV] = useState(value);
   useEffect(() => setV(value), [value]);
   const dirty = v !== value;
   return (
     <div>
-      <textarea aria-label={label} value={v} disabled={disabled} onChange={(e) => setV(e.target.value)} onBlur={() => { if (dirty && !disabled) onCommit(v); }} />
+      <textarea aria-label={label} data-tour={tour} value={v} disabled={disabled} onChange={(e) => setV(e.target.value)} onBlur={() => { if (dirty && !disabled) onCommit(v); }} />
       {dirty && !disabled && (
         <div className="row" style={{ marginTop: 6 }}>
           <button className="btn sm" onClick={() => onCommit(v)}>Save edits</button>
@@ -108,12 +108,12 @@ export function EvidenceModal({ fact, patient, onClose }: { fact: Fact; patient:
       {doc ? (
         <>
           <p className="muted small">{doc.title} · {doc.date}{doc.scanned ? ' · scanned (OCR)' : ''}. The highlighted text is the cited span; the value was checked against it.</p>
-          <div className="doc"><Highlighted text={doc.text} span={fact.source.span} /></div>
+          <div className="doc" data-tour="evidence-doc"><Highlighted text={doc.text} span={fact.source.span} /></div>
         </>
       ) : (
         <>
           <p className="muted small">Coded FHIR R4 resource (read live at query time).</p>
-          <div className="doc">{JSON.stringify({ resourceType: fact.source.resource, id: fact.source.id, code: fact.key, valueQuantity: { value: fact.value }, effectiveDateTime: fact.date, text: fact.source.label }, null, 2)}</div>
+          <div className="doc" data-tour="evidence-doc">{JSON.stringify({ resourceType: fact.source.resource, id: fact.source.id, code: fact.key, valueQuantity: { value: fact.value }, effectiveDateTime: fact.date, text: fact.source.label }, null, 2)}</div>
         </>
       )}
     </Modal>

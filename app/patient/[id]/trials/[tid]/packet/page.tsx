@@ -37,7 +37,7 @@ export default function Packet() {
   return (
     <div>
       <p className="small noprint"><Link href={`/patient/${id}/trials/${tid}`}>← {t.code} checklist</Link></p>
-      <div className="row between noprint"><h1>Evidence packet</h1><button className="btn pri" onClick={() => { markTour('packet'); window.print(); }}>Print or save as PDF</button></div>
+      <div className="row between noprint"><h1>Evidence packet</h1><button className="btn pri" data-tour="packet-print" onClick={() => { markTour('packet'); window.print(); }}>Print or save as PDF</button></div>
       <div className="paper">
         <h1>Trial screening evidence packet</h1>
         <p className="muted">A screening aid built from the matching engine’s deterministic result. Formal eligibility is confirmed by the trial team per protocol.</p>

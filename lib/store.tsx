@@ -61,12 +61,17 @@ export interface State {
   doubleReviews: Record<string, DoubleReview>;
   manualScreens: Record<string, ManualDecision>;
   tour: Record<string, boolean>;
+  /** The in-page guided tour: whether it is showing, the step it is on, and whether a finished step moves on by itself. */
+  guide: Guide;
 }
+
+export interface Guide { on: boolean; step: string | null; auto: boolean }
 
 const INITIAL: State = {
   role: 'oncologist', overlay: {}, overrides: {}, dismissals: {}, referrals: [], audit: [], rules: {}, opened: [], amendments: [],
   sim: { agent: 'normal', ehr: 'normal', rollback: false, regression: false }, events: [], watchlist: ['t1'], seen: {}, lastSig: {}, quota: {}, usage: [], telemetry: [],
   searched: {}, queryDate: TODAY, handouts: {}, anchors: [], tamper: null, mode: 'hitl', adjudications: {}, doubleReviews: {}, manualScreens: {}, tour: {},
+  guide: { on: false, step: null, auto: true },
 };
 
 // Bump when the persisted shape changes so an old browser state never crashes the new build.
@@ -143,6 +148,7 @@ interface Ctx {
   secondReview: (pair: string, slot: 'coordinator' | 'governance', verdict: Verdict) => void;
   setManual: (pair: string, d: ManualDecision) => void;
   markTour: (id: string, on?: boolean) => void;
+  setGuide: (p: Partial<Guide>) => void;
   reset: () => void;
 }
 
@@ -162,7 +168,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        setS({ ...INITIAL, ...parsed, sim: { ...INITIAL.sim, ...(parsed.sim ?? {}) } });
+        setS({ ...INITIAL, ...parsed, sim: { ...INITIAL.sim, ...(parsed.sim ?? {}) }, guide: { ...INITIAL.guide, ...(parsed.guide ?? {}) } });
       }
     } catch { /* ignore a corrupt or blocked store */ }
     setReady(true);
@@ -412,6 +418,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return withLog({ ...st, manualScreens: { ...st.manualScreens, [pair]: d } }, 'shadow.manual', `Coordinator recorded a manual screening decision: ${d}`, pid, tid);
     }),
     markTour: (id, on = true) => setS((st) => ({ ...st, tour: { ...st.tour, [id]: on } })),
+    setGuide: (p) => setS((st) => ({ ...st, guide: { ...st.guide, ...p } })),
     reset: () => { setS(INITIAL); try { localStorage.removeItem(KEY); } catch { /* ignore */ } },
   };
 

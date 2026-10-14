@@ -73,7 +73,7 @@ export default function TrialCard({ m, pid, run, watching, onWatch, canDismiss, 
         </div>
       )}
       <div className="row wrap" style={{ marginTop: 6 }}>
-        <Link className="btn pri sm" href={`/patient/${pid}/trials/${t.id}`}>Open checklist</Link>
+        <Link className="btn pri sm" data-tour={`open-checklist-${t.id}`} href={`/patient/${pid}/trials/${t.id}`}>Open checklist</Link>
         <button className="btn sm" disabled={!canDismiss} title={canDismiss ? '' : dismissHint} onClick={onDismiss}>Dismiss</button>
         <button className="btn sm" aria-expanded={why} onClick={() => setWhy(!why)}>{why ? 'Hide rank' : 'Why this rank?'}</button>
       </div>

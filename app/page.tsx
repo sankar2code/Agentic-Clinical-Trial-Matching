@@ -80,7 +80,7 @@ export default function Home() {
                   <td className="small">{p.visit}</td>
                   <td><div className="col" style={{ gap: 4 }}>{hidden ? <span className="chip gray">hidden in shadow mode</span> : p.treating ? (<>{e > 0 && <span className="chip eligible">{e} likely eligible</span>}{n > 0 && <span className="chip near">{n} near-eligible</span>}{e + n === 0 && <span className="chip gray">no match</span>}</>) : <span className="chip gray">🔒 restricted</span>}</div></td>
                   <td className="small"><div>{p.tags.map((tg) => <span className="tag" key={tg}>{tg}</span>)}</div><span className="muted">{p.scenario}</span></td>
-                  <td><Link className="btn pri sm" href={`/launch?patient=${p.id}`}>Open Trial Match</Link></td>
+                  <td><Link className="btn pri sm" data-tour="open-trial-match" href={`/launch?patient=${p.id}`}>Open Trial Match</Link></td>
                 </tr>
               );
             })}

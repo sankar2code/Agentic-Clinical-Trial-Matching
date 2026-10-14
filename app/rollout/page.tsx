@@ -59,7 +59,7 @@ export default function Rollout() {
       <h1>Rollout modes</h1>
       <p className="muted">PRD section 9: shadow first, then human-in-the-loop, then steady state with a weekly double-review. Each step is earned with evidence, not a button. Current mode: <b>{MODE_INFO[s.mode].label}</b>.</p>
       <div className="tabs" role="tablist">
-        {([['mode', 'Mode and exit criteria'], ['shadow', 'Shadow comparison'], ['review', 'Adjudication and sampling']] as const).map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
+        {([['mode', 'Mode and exit criteria'], ['shadow', 'Shadow comparison'], ['review', 'Adjudication and sampling']] as const).map(([k, l]) => <button key={k} role="tab" data-tour={`rollout-tab-${k}`} aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
 
       {tab === 'mode' && (
@@ -102,7 +102,8 @@ export default function Rollout() {
             <label className="row" style={{ margin: 0, fontWeight: 400, color: 'var(--ink)' }}>System result:
               <select style={{ width: 230, marginLeft: 8 }} value={source} onChange={(e) => setSource(e.target.value as 'agent')}><option value="agent">After the agent has run</option><option value="chart">Chart as it stands (engine only)</option></select></label>
           </div>
-          <div className="gridc">
+          <div data-tour="shadow-read">
+          <div className="gridc" data-tour="shadow-panel">
             <div className="card"><div className="muted small">Pairs compared</div><div className="kpi">{stats.n}</div></div>
             <div className="card"><div className="muted small">Agreement</div><div className="kpi">{stats.agreement}%</div><div className="small muted">Cohen’s kappa {stats.kappa}</div></div>
             <div className="card"><div className="muted small">System: precision / recall</div><div className="kpi">{stats.system.precision}% / {stats.system.recall}%</div><div className="small muted">{stats.system.tp} found, {stats.system.fp} wrongly flagged, {stats.system.fn} missed</div></div>
@@ -110,6 +111,7 @@ export default function Rollout() {
           </div>
           {stats.incrementalFinds.length > 0 && <Banner tone="info"><b>The system found {stats.incrementalFinds.length} eligible patient{stats.incrementalFinds.length > 1 ? 's' : ''} that manual screening missed:</b> {stats.incrementalFinds.map((r) => `${pn(r.pid)} for ${nm(r.tid)}`).join('; ')}.</Banner>}
           {stats.catches.length > 0 && <Banner tone="info"><b>The system caught {stats.catches.length} wrongly flagged patient{stats.catches.length > 1 ? 's' : ''}:</b> {stats.catches.map((r) => `${pn(r.pid)} for ${nm(r.tid)}`).join('; ')}.</Banner>}
+          </div>
           <Sec title="Where they disagree" count={rows.filter((r) => !r.agree).length} />
           <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
             <table>
@@ -147,7 +149,7 @@ export default function Rollout() {
           </div>
 
           <Sec title="Weekly double-review sample" note={`${SAMPLE_RATE}% of ${goldPairs().length} results, week ${week}, chosen deterministically`} />
-          <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+          <div className="card" data-tour="review-sample" style={{ padding: 0, overflowX: 'auto' }}>
             <table>
               <thead><tr><th>Sampled result</th><th>System</th><th>Coordinator</th><th>Governance</th><th>Reviewers</th></tr></thead>
               <tbody>{sampleKeys.map((k) => { const [pid, tid] = k.split('|'); const d = s.doubleReviews[reviewKey(week, k)]; const st = reviewState(d); const sys = system[k]; return (
@@ -155,7 +157,7 @@ export default function Rollout() {
                   {(['coordinator', 'governance'] as const).map((sl) => (
                     <td key={sl}>{d?.[sl] ? <span className={`chip ${d[sl] === 'agree' ? 'met' : 'notmet'}`}>{d[sl]}</span> : (
                       <span title={slot === sl ? '' : PERM_HINT.secondReview}>
-                        <button className="btn sm" disabled={slot !== sl} onClick={() => { secondReview(k, sl, 'agree'); markTour('rollout'); }}>Agree</button>{' '}
+                        <button className="btn sm" data-tour={sl === 'governance' && slot === sl ? 'review-agree-gov' : undefined} disabled={slot !== sl} onClick={() => { secondReview(k, sl, 'agree'); markTour('rollout'); }}>Agree</button>{' '}
                         <button className="btn sm dng" disabled={slot !== sl} onClick={() => secondReview(k, sl, 'disagree')}>Disagree</button></span>)}</td>))}
                   <td>{st.complete ? <span className={`chip ${st.agree ? 'met' : 'unknown'}`}>{st.agree ? 'reviewers agree' : 'reviewers differ: escalate'}</span> : <span className="muted small">awaiting both</span>}</td></tr>); })}</tbody>
             </table>

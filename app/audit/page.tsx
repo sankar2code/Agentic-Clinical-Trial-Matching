@@ -39,12 +39,12 @@ export default function Audit() {
       <h1>Audit log</h1>
       <p className="muted">Append-only record of every result, its evidence pointers, the versions that produced it, and every human action. Each entry carries a SHA-256 hash that covers the entry before it, so editing any earlier entry is detectable.</p>
 
-      <div className="card" style={{ marginBottom: 14, borderColor: v.ok ? undefined : 'var(--not)' }}>
+      <div className="card" data-tour="audit-integrity" style={{ marginBottom: 14, borderColor: v.ok ? undefined : 'var(--not)' }}>
         <div className="row between wrap">
           <div className="row wrap"><h2 style={{ margin: 0 }}>Integrity</h2><span className={`seal ${v.ok ? 'ok' : 'bad'}`}>{v.ok ? `Chain intact · ${v.checked} entries verified` : 'INTEGRITY FAILURE'}</span></div>
           <div className="row wrap">
-            <button className="btn pri sm" disabled={!can('integrity')} title={can('integrity') ? '' : PERM_HINT.integrity} onClick={() => { log('audit.verify', v.ok ? `Verified the chain: ${v.checked} entries intact.` : `Verification FAILED at entry ${v.broken?.id ?? 'anchor'}.`); markTour('chain'); }}>Verify and record</button>
-            <button className="btn sm" disabled={!can('integrity') || s.audit.length === 0 || !!s.tamper} onClick={anchorNow} title={!can('integrity') ? PERM_HINT.integrity : s.tamper ? 'Undo the tampering first: an anchor of a tampered log would certify the tampering' : 'Write the current head hash to write-once storage'}>Anchor the head</button>
+            <button className="btn pri sm" data-tour="audit-verify" disabled={!can('integrity')} title={can('integrity') ? '' : PERM_HINT.integrity} onClick={() => { log('audit.verify', v.ok ? `Verified the chain: ${v.checked} entries intact.` : `Verification FAILED at entry ${v.broken?.id ?? 'anchor'}.`); }}>Verify and record</button>
+            <button className="btn sm" data-tour="audit-anchor" disabled={!can('integrity') || s.audit.length === 0 || !!s.tamper} onClick={anchorNow} title={!can('integrity') ? PERM_HINT.integrity : s.tamper ? 'Undo the tampering first: an anchor of a tampered log would certify the tampering' : 'Write the current head hash to write-once storage'}>Anchor the head</button>
           </div>
         </div>
         <p className="mono-box muted" style={{ margin: '8px 0 4px' }}>Head: {v.head}</p>
@@ -52,7 +52,7 @@ export default function Audit() {
         {!v.ok && v.broken && <Banner tone="bad"><b>Entry {v.broken.id}: {v.broken.reason}.</b> {v.broken.detail} {v.unverifiable} later entr{v.unverifiable === 1 ? 'y is' : 'ies are'} unverifiable, because their own hashes rest on this one.</Banner>}
         {v.anchorFailures.map((a) => <Banner key={a.count} tone="bad"><b>Anchor check failed.</b> {a.detail}</Banner>)}
 
-        <details style={{ marginTop: 10 }}>
+        <details style={{ marginTop: 10 }} data-tour="audit-attacker">
           <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Attacker simulation (demo only)</summary>
           <p className="muted small">Pretend to be someone with write access to the stored log. Edit a single entry, or rewrite history and recompute every hash so the chain still looks valid. Then watch what the integrity check says.</p>
           {s.tamper ? (
@@ -61,8 +61,8 @@ export default function Audit() {
             <div className="row wrap" style={{ alignItems: 'flex-end' }}>
               <div style={{ width: 120 }}><Field label="Entry number"><input type="number" min={1} max={s.audit.length} value={target} onChange={(e) => setTarget(Number(e.target.value))} /></Field></div>
               <div style={{ width: 320 }}><Field label="Rewrite its detail as"><input value={text} onChange={(e) => setText(e.target.value)} /></Field></div>
-              <button className="btn dng sm" disabled={!can('integrity') || target < 1 || target > s.audit.length} onClick={() => tamperAudit(target, 'edit', text)}>Edit one entry</button>
-              <button className="btn dng sm" disabled={!can('integrity') || target < 1 || target > s.audit.length} onClick={() => tamperAudit(target, 'rewrite', text)}>Rewrite history and re-hash</button>
+              <button className="btn dng sm" data-tour="audit-tamper-edit" disabled={!can('integrity') || target < 1 || target > s.audit.length} onClick={() => { tamperAudit(target, 'edit', text); markTour('chain'); }}>Edit one entry</button>
+              <button className="btn dng sm" disabled={!can('integrity') || target < 1 || target > s.audit.length} onClick={() => { tamperAudit(target, 'rewrite', text); markTour('chain'); }}>Rewrite history and re-hash</button>
             </div>
           )}
           {!can('integrity') && <p className="small muted">{PERM_HINT.integrity}.</p>}
@@ -94,7 +94,7 @@ export default function Audit() {
                     <td className="small">{e.detail}{e.snapshot && (
                       <div className="row wrap" style={{ marginTop: 4 }}>
                         <button className="btn sm" aria-expanded={open === e.id} onClick={() => setOpen(open === e.id ? null : e.id)}>{open === e.id ? 'Hide results' : `View ${e.snapshot.rows.length} stored results`}</button>
-                        <button className="btn sm" onClick={() => { setReplayOf(e); markTour('replay'); }}>Replay under today’s rules</button>
+                        <button className="btn sm" data-tour="audit-replay" onClick={() => { setReplayOf(e); markTour('replay'); }}>Replay under today’s rules</button>
                       </div>)}</td>
                     <td className="mono muted">{e.versions}<div title={e.hash}>#{(e.hash ?? '').slice(0, 10)}…</div></td>
                   </tr>
@@ -118,7 +118,7 @@ export default function Audit() {
           {!replay ? <p>This entry stored no results.</p> : (
             <>
               <p className="muted small">The chart as it was cited in entry {replayOf.id} (as of {replay.asOf}), judged by the rules as they stand now. Rows you overrode are left out.{replayOf.drill?.length ? ` The extraction drill for ${replayOf.drill.map((k) => FACT_LABEL[k]).join(', ')} was switched on when this was recorded, so it is switched on here too.` : ''}</p>
-              <div className="small"><b>Then:</b> <span className="mono">{replay.thenVersions}</span><br /><b>Now:</b> <span className="mono">{fullStamp}</span></div>
+              <div className="small" data-tour="audit-replay-result"><b>Then:</b> <span className="mono">{replay.thenVersions}</span><br /><b>Now:</b> <span className="mono">{fullStamp}</span></div>
               {replay.changed.length === 0 && replay.added.length === 0 ? <Banner tone="info"><b>Nothing would change.</b> All {replay.rows.length} stored results come out the same under today’s rules{replay.skippedOverrides ? ` (${replay.skippedOverrides} overridden row(s) skipped)` : ''}.</Banner> : (
                 <>
                   <Banner tone="warn"><b>{replay.changed.length} stored result(s) would differ</b>{replay.added.length ? `, and ${replay.added.length} criterion(s) are new` : ''}. Rule edits and protocol amendments since this run are the cause.</Banner>

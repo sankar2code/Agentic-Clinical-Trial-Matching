@@ -68,10 +68,10 @@ export default function Guardrails() {
       <div className="grid-lab">
         <div>
           <div className="row between wrap" style={{ marginBottom: 8 }}>
-            <button className="btn pri" onClick={runAll}>Run all {SCENARIOS.length} scenarios</button>
+            <button className="btn pri" data-tour="guard-run-all" onClick={runAll}>Run all {SCENARIOS.length} scenarios</button>
             {done.length > 0 && <span className="chip" style={{ background: held === done.length ? 'var(--met-bg)' : 'var(--not-bg)', color: held === done.length ? 'var(--met)' : 'var(--not)' }}>Guardrails held: {held} of {done.length}</span>}
           </div>
-          <div className="col">
+          <div className="col" data-tour="guard-results">
             {SCENARIOS.map((s) => (
               <div key={s.id}>
                 {traces[s.id] ? <TraceView t={traces[s.id]} /> : (
@@ -105,7 +105,7 @@ export default function Guardrails() {
             <p className="muted small" style={{ margin: '4px 0 8px' }}>{off.length === 0 ? 'Every control is on.' : `${off.length} off. The next run shows what they were stopping.`}</p>
             <div className="col">
               {(Object.keys(GUARD_INFO) as (keyof Guards)[]).map((k) => (
-                <label key={k} className="row" style={{ alignItems: 'flex-start', margin: 0, fontWeight: 400, color: 'var(--ink)' }}>
+                <label key={k} data-tour="guard-control" className="row" style={{ alignItems: 'flex-start', margin: 0, fontWeight: 400, color: 'var(--ink)' }}>
                   <input type="checkbox" style={{ width: 'auto', marginTop: 3 }} checked={g[k]} onChange={(e) => setG({ ...g, [k]: e.target.checked })} />
                   <span><b>{GUARD_INFO[k].name}</b> <span className="chip gray">{GUARD_INFO[k].prd}</span><br /><span className="muted small">{GUARD_INFO[k].what}</span></span>
                 </label>

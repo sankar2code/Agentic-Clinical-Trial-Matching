@@ -47,7 +47,7 @@ export default function Brief() {
       </div>
       <div className="tabs noprint" role="tablist">
         <button role="tab" aria-selected={tab === 'brief'} className={tab === 'brief' ? 'on' : ''} onClick={() => setTab('brief')}>For the oncologist</button>
-        <button role="tab" aria-selected={tab === 'handout'} className={tab === 'handout' ? 'on' : ''} onClick={() => setTab('handout')}>Patient handout</button>
+        <button role="tab" data-tour="tab-handout" aria-selected={tab === 'handout'} className={tab === 'handout' ? 'on' : ''} onClick={() => setTab('handout')}>Patient handout</button>
       </div>
 
       {tab === 'brief' && (
@@ -81,18 +81,18 @@ export default function Brief() {
               <div className="row wrap" style={{ alignItems: 'flex-end' }}>
                 <div style={{ width: 230 }}><label htmlFor="trial">Study</label><select id="trial" value={chosen?.trial.id} onChange={(e) => setTid(e.target.value)}>{candidates.map((m) => <option key={m.trial.id} value={m.trial.id}>{m.trial.code} ({m.state === 'eligible' ? 'likely eligible' : 'near-eligible'})</option>)}</select></div>
                 <div style={{ width: 200 }}><label htmlFor="lang">Language</label><select id="lang" value={wanted} onChange={(e) => setLang(e.target.value)}>{Array.from(new Set([...HANDOUT_LANGUAGES, p.language])).map((l) => <option key={l} value={l}>{l}{l === p.language ? ' (patient’s language)' : ''}</option>)}</select></div>
-                <span className={`chip ${approved ? 'met' : 'unknown'}`}>{approved ? `Approved by ${rec?.by}` : outdated ? 'Approval out of date: the text changed' : 'Draft: not yet approved for sharing'}</span>
+                <span data-tour={approved ? 'handout-status' : undefined} className={`chip ${approved ? 'met' : 'unknown'}`}>{approved ? `Approved by ${rec?.by}` : outdated ? 'Approval out of date: the text changed' : 'Draft: not yet approved for sharing'}</span>
                 {grade !== null && <span className={`chip ${grade <= 8 ? 'met' : 'unknown'}`}>Reading grade {grade}</span>}
               </div>
               {handout?.fallback && <Banner tone="warn"><b>No translation available for {p.language}.</b> English is shown. An interpreter is required before this is shared.</Banner>}
               {handout?.needsInterpreter && (
-                <label className="row" style={{ margin: '8px 0 0', fontWeight: 400, color: 'var(--ink)' }}>
+                <label className="row" data-tour="handout-interpreter" style={{ margin: '8px 0 0', fontWeight: 400, color: 'var(--ink)' }}>
                   <input type="checkbox" style={{ width: 'auto' }} disabled={!can('handout') || approved} checked={!!rec?.interpreterReviewed} onChange={(e) => setHandout(key, { interpreterReviewed: e.target.checked })} />
                   A qualified medical interpreter has reviewed this {handout.lang} text (machine-assisted translation).
                 </label>
               )}
               <div className="row wrap" style={{ marginTop: 10 }}>
-                <button className="btn pri" disabled={!can('handout') || approved || !handout || (handout.needsInterpreter && !rec?.interpreterReviewed)} title={!can('handout') ? PERM_HINT.handout : handout?.needsInterpreter && !rec?.interpreterReviewed ? 'An interpreter must review a non-English handout first' : ''}
+                <button className="btn pri" data-tour="handout-approve" disabled={!can('handout') || approved || !handout || (handout.needsInterpreter && !rec?.interpreterReviewed)} title={!can('handout') ? PERM_HINT.handout : handout?.needsInterpreter && !rec?.interpreterReviewed ? 'An interpreter must review a non-English handout first' : ''}
                   onClick={() => setHandout(key, { status: 'approved', by: actor, at: new Date().toISOString(), hash: textHash }, `Handout for ${chosen!.trial.code} in ${handout!.lang} approved for sharing${handout!.needsInterpreter ? ' after interpreter review' : ''}`, p.id, chosen!.trial.id)}>Approve for sharing</button>
                 <button className="btn" disabled={(!approved && !outdated) || !can('handout')} onClick={() => setHandout(key, { status: 'draft', by: undefined, at: undefined, hash: undefined }, `Handout for ${chosen!.trial.code} in ${handout!.lang} returned to draft`, p.id, chosen!.trial.id)}>Return to draft</button>
                 <button className="btn" disabled={!approved} title={approved ? '' : 'Approve it first'} onClick={() => window.print()}>Print handout</button>

@@ -13,7 +13,7 @@ npm run dev        # http://localhost:3100
 npm run validate   # about 4,200 checks across 20 groups
 ```
 
-Start with the **Guided tour** (left nav, last item). It walks 21 steps through the product in the order a PRD reviewer would ask about them, and each step ticks itself when the app sees you do it.
+Start with the **Guided tour**: press **Start tour** in the top bar, or open the tour page (left nav, last item). It walks 21 steps through the product in the order a PRD reviewer would ask about them. For each step the guide opens the right page, switches to the right demo role, puts a ring around the exact control to use next (dimming the rest of the page), and explains what to do in a card beside it. It moves on by itself a few seconds after the app sees you do the action, and leaves the demo tidy for the next step (it resets time travel, stops the ops drill and undoes the audit tampering). Pause it with ✕ and resume from the top bar; progress survives a reload. Each step's cues live in `lib/tour.ts` and point at `data-tour` attributes on the pages; the overlay is `components/TourGuide.tsx`.
 
 ### What is in it
 

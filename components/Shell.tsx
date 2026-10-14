@@ -6,7 +6,7 @@ import { AGENT_QUOTA, ROLE_INFO, useApp } from '@/lib/store';
 import { TODAY } from '@/lib/data';
 import { addDays } from '@/lib/expiry';
 import { MODE_INFO } from '@/lib/rollout';
-import { tourProgress } from '@/lib/tour';
+import TourGuide, { TourChip } from '@/components/TourGuide';
 import { daysBetween } from '@/lib/engine';
 import { THEME_KEY, effectiveTheme, otherTheme, parseTheme, type Theme } from '@/lib/theme';
 import { Field } from '@/components/ui';
@@ -87,18 +87,18 @@ function TimeTravel() {
   const sim = s.queryDate !== TODAY;
   return (
     <div className="pop" ref={ref}>
-      <button className={`chip ${sim ? 'sim' : 'brand'}`} style={{ border: 0, cursor: 'pointer' }} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)}>
+      <button data-tour="time-chip" className={`chip ${sim ? 'sim' : 'brand'}`} style={{ border: 0, cursor: 'pointer' }} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)}>
         ⏱ {sim ? `Simulated ${s.queryDate} (${offset > 0 ? '+' : ''}${offset} d)` : `Evidence as of ${TODAY}`}
       </button>
       {open && (
-        <div className="popbox card" role="dialog" aria-label="Time travel">
+        <div className="popbox card" role="dialog" aria-label="Time travel" data-tour="time-pop">
           <b>Time travel</b>
           <p className="muted small" style={{ margin: '4px 0 8px' }}>Every result is evaluated as of this date. Lab windows age, and anything dated after it does not exist yet.</p>
           <input type="range" min={-14} max={90} step={1} value={local} aria-label="Days from today" onChange={(e) => setLocal(Number(e.target.value))} onMouseUp={() => commit(local)} onTouchEnd={() => commit(local)} onKeyUp={() => commit(local)} />
           <div className="row between small"><span>{addDays(TODAY, local)}</span><span className="muted">{local > 0 ? '+' : ''}{local} days</span></div>
           <div className="row wrap" style={{ marginTop: 8 }}>
-            {[-7, 7, 14, 30].map((n) => <button key={n} className="btn sm" onClick={() => commit(offset + n)}>{n > 0 ? '+' : ''}{n} d</button>)}
-            <button className="btn sm pri" disabled={!sim} onClick={() => commit(0)}>Reset</button>
+            {[-7, 7, 14, 30].map((n) => <button key={n} data-tour={n === 30 ? 'time-plus30' : undefined} className="btn sm" onClick={() => commit(offset + n)}>{n > 0 ? '+' : ''}{n} d</button>)}
+            <button className="btn sm pri" data-tour="time-reset" disabled={!sim} onClick={() => commit(0)}>Reset</button>
           </div>
         </div>
       )}
@@ -153,7 +153,6 @@ export default function Shell({ children }: { children: ReactNode }) {
   const groups = Array.from(new Set(NAV.map((n) => n.group)));
   const onPatient = path.startsWith('/patient');
   const sims = [s.sim.agent !== 'normal' && `agent ${s.sim.agent === 'down' ? 'down' : 'times out'}`, s.sim.ehr !== 'normal' && `EHR ${s.sim.ehr === 'down' ? 'down' : 'slow'}`, s.sim.regression && 'PD-L1 extraction broken'].filter(Boolean) as string[];
-  const tour = tourProgress(s);
   return (
     <div className="shell">
       <a className="skip" href="#content">Skip to content</a>
@@ -179,7 +178,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           <div className="grow row wrap">
             <TimeTravel />
             <Link href="/rollout" className="chip gray hide-sm" title="Rollout mode (PRD section 9)">Mode: {MODE_INFO[s.mode].label}</Link>
-            {tour.done < tour.total && <Link href="/tour" className="chip brand hide-sm">Tour {tour.done}/{tour.total} →</Link>}
+            <TourChip />
             <span className="chip gray hide-sm" title="Every result is stamped with these versions">{versions.rules} · {versions.prompt}</span>
             {s.sim.rollback && <span className="chip review">Rolled back</span>}
             {sims.map((x) => <span key={x} className="chip sim" title="A scenario control is active">Scenario: {x}</span>)}
@@ -196,6 +195,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         {ready ? children : <div className="skel" />}
       </main>
       <SimPanel />
+      <TourGuide />
     </div>
   );
 }

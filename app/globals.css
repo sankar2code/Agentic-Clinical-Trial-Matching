@@ -3,6 +3,8 @@
   --bg: #f6f6f7; --panel: #ffffff; --ink: #18181b; --muted: #62626c; --line: #e4e4e7; --brand: #0f766e; --brand-ink: #ffffff; --brand-soft: #e4f3f1;
   --met: #167a4a; --met-bg: #e2f5ea; --not: #b3261e; --not-bg: #fce8e6; --unk: #8a5a00; --unk-bg: #fff2d6; --rev: #6a3fb5; --rev-bg: #efe8fb; --pend: #52525b; --pend-bg: #ececee;
   --shadow: 0 1px 2px rgba(24, 24, 27, .06), 0 4px 14px rgba(24, 24, 27, .05);
+  --scrim: rgba(9, 9, 11, .38);
+  --tour-dock: 0px;
 }
 /* Dark follows the system unless the person chose light with the toggle; choosing dark forces it. The two dark blocks must stay identical (the validation suite checks). */
 @media (prefers-color-scheme: dark) {
@@ -11,6 +13,7 @@
     --bg: #0b0b0c; --panel: #141416; --ink: #ececef; --muted: #9d9da8; --line: #2a2a2f; --brand: #2dd4bf; --brand-ink: #05201c; --brand-soft: #0f2f2b;
     --met: #4cc58a; --met-bg: #12301f; --not: #ff8f87; --not-bg: #3a1815; --unk: #f0b94d; --unk-bg: #3a2c0c; --rev: #b69af0; --rev-bg: #2a2142; --pend: #a1a1aa; --pend-bg: #27272a;
     --shadow: none;
+    --scrim: rgba(0, 0, 0, .6);
   }
 }
 :root[data-theme="dark"] {
@@ -18,6 +21,7 @@
   --bg: #0b0b0c; --panel: #141416; --ink: #ececef; --muted: #9d9da8; --line: #2a2a2f; --brand: #2dd4bf; --brand-ink: #05201c; --brand-soft: #0f2f2b;
   --met: #4cc58a; --met-bg: #12301f; --not: #ff8f87; --not-bg: #3a1815; --unk: #f0b94d; --unk-bg: #3a2c0c; --rev: #b69af0; --rev-bg: #2a2142; --pend: #a1a1aa; --pend-bg: #27272a;
   --shadow: none;
+  --scrim: rgba(0, 0, 0, .6);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif; }
@@ -172,3 +176,22 @@ a.chip { text-decoration: none; }
   .tourstep { grid-template-columns: 28px minmax(0, 1fr); }
   .tourstep > .col { grid-column: 2; flex-direction: row; flex-wrap: wrap; align-items: flex-start !important; }
 }
+
+/* Guided tour: a ring on the control to use next, the rest of the page dimmed (clicks still pass through), and a coach card beside it. */
+.tour-spot { position: fixed; z-index: 60; border-radius: 10px; pointer-events: none; box-shadow: 0 0 0 3px var(--brand), 0 0 0 9999px var(--scrim); transition: top .2s ease, left .2s ease, width .2s ease, height .2s ease; }
+.tour-spot::after { content: ''; position: absolute; inset: -3px; border-radius: 12px; border: 2px solid var(--brand); animation: tourping 1.6s ease-out infinite; }
+@keyframes tourping { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.06); } }
+.tour-card { position: fixed; z-index: 61; background: var(--panel); color: var(--ink); border: 1px solid var(--brand); border-radius: 12px; padding: 10px 14px 12px; box-shadow: var(--shadow); transition: top .2s ease, left .2s ease; }
+.tour-card p { line-height: 1.45; }
+.tour-ok { color: var(--met); font-weight: 700; margin: 0 0 4px; }
+.tour-count { height: 3px; background: var(--pend-bg); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+.tour-count > i { display: block; height: 100%; background: var(--brand); transform-origin: left; animation: tourcount linear forwards; }
+@keyframes tourcount { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .tour-spot, .tour-card { transition: none; } .tour-spot::after { animation: none; } }
+@media (max-width: 800px) {
+  .tour-card { max-height: 46vh; overflow: auto; }
+  /* While the card is docked over the bottom of a phone screen, leave room to scroll anything above it, inside dialogs too. */
+  .main { padding-bottom: calc(90px + var(--tour-dock)); }
+  .modal { padding-bottom: calc(18px + var(--tour-dock)); }
+}
+@media print { .tour-ui { display: none !important; } }

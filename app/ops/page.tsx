@@ -33,13 +33,13 @@ export default function Ops() {
       <div className="card" style={{ marginBottom: 12 }}>
         <div className="row between wrap">
           <div><b>Regression drill</b><div className="small muted">Make PD-L1 extraction silently stop working, as a bad prompt release might, and watch the dashboard notice.</div></div>
-          <button className={`btn ${s.sim.regression ? 'dng' : 'pri'}`} onClick={() => setSim({ regression: !s.sim.regression })}>{s.sim.regression ? 'Stop the drill' : 'Start the drill'}</button>
+          <button data-tour="ops-drill" className={`btn ${s.sim.regression ? 'dng' : 'pri'}`} onClick={() => setSim({ regression: !s.sim.regression })}>{s.sim.regression ? 'Stop the drill' : 'Start the drill'}</button>
         </div>
       </div>
 
       <Sec title="Alerts" count={alerts.length} note={crit ? `${crit} critical` : 'nothing critical'} />
       {alerts.length === 0 ? <div className="card muted">All clear. Open a patient, run the agent, or start the drill to generate telemetry.</div> : (
-        <div className="col">{alerts.map((a) => (
+        <div className="col" data-tour="ops-alerts">{alerts.map((a) => (
           <Banner key={a.id} tone={tone[a.severity]}><b>{a.severity.toUpperCase()}: {a.title}.</b> {a.detail}<div className="small" style={{ marginTop: 4 }}><b>Runbook:</b> {a.runbook}</div></Banner>
         ))}</div>
       )}

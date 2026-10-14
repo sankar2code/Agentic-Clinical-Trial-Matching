@@ -52,7 +52,7 @@ export default function EvalPage() {
             </select>
           </div>
           <button className="btn pri" onClick={() => run(variant)}>Run the gate</button>
-          <button className="btn" onClick={runEvery}>Compare all four</button>
+          <button className="btn" data-tour="eval-compare" onClick={runEvery}>Compare all four</button>
         </div>
         <p className="muted small" style={{ margin: '8px 0 0' }}>{VARIANT_INFO[variant].note}{variant === 'current' && (edits > 0 || s.amendments.length > 0) ? ` ${edits} rule decision(s) and ${s.amendments.length} amendment(s) are in force. The golden set predates them, so differences are expected until it is re-adjudicated.` : ''}</p>
       </div>
@@ -60,7 +60,7 @@ export default function EvalPage() {
       {all && (
         <>
           <Sec title="Release gate by ruleset" />
-          <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+          <div className="card" data-tour="eval-results" style={{ padding: 0, overflowX: 'auto' }}>
             <table>
               <thead><tr><th>Ruleset</th><th>Gate</th><th>Failing metrics</th></tr></thead>
               <tbody>{ORDER.map((v) => (

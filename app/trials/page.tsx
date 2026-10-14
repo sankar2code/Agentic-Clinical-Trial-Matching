@@ -42,7 +42,7 @@ export default function Cohort() {
           </div>
           {!shadowHidden && <>
           <Sec title="Enrollment funnel" note={`${t.code} · as of ${s.queryDate}`} />
-          <div className="card" style={{ marginBottom: 12 }}>
+          <div className="card" data-tour="funnel" style={{ marginBottom: 12 }}>
             {fx.stages.map((st) => (
               <div className="funnelrow" key={st.id}>
                 <span className="small">{st.label}{st.note && <span className="muted"> · {st.note}</span>}</span>

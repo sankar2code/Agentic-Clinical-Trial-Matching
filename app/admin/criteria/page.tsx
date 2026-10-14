@@ -38,6 +38,9 @@ function Row({ t, c }: { t: Trial; c: Criterion }) {
   const errs = validateRule(rule);
   const edited = op !== c.rule.op || val !== showValue(c.rule.value) || win !== (c.rule.windowDays?.toString() ?? '');
   const dis = !can('rules');
+  // Tour targets: the rule waiting for review, and the one a reviewer has just decided.
+  const waiting = c.review !== 'approved';
+  const decided = s.rules[`${t.id}|${c.id}`]?.review === 'approved';
   // A reviewer's correction to the parsed rule. The source text from the registry is not rewritten, so say so.
   const shipped = TRIALS.find((x) => x.id === t.id)?.criteria.find((k) => k.id === c.id);
   const correctedFrom = shipped && JSON.stringify(shipped.rule) !== JSON.stringify(c.rule) && !c.amended ? shipped.rule : null;
@@ -77,11 +80,11 @@ function Row({ t, c }: { t: Trial; c: Criterion }) {
   ) : spec.type === 'enum' ? (
     <input style={{ width: 200 }} value={val} onChange={(e) => setVal(e.target.value)} disabled={dis} aria-label="value (comma separated)" placeholder={spec.allowed.slice(0, 3).join(', ')} />
   ) : (
-    <input style={{ width: 110 }} type="number" step="any" value={val} onChange={(e) => setVal(e.target.value)} disabled={dis} aria-label="value" />
+    <input style={{ width: 110 }} data-tour={waiting ? 'rule-value' : undefined} type="number" step="any" value={val} onChange={(e) => setVal(e.target.value)} disabled={dis} aria-label="value" />
   );
 
   return (
-    <tr>
+    <tr data-tour={waiting ? 'rule-row' : undefined}>
       <td style={{ width: '28%' }}>{c.text}<div className="small muted">{c.type} · parse confidence {Math.round(c.parseConfidence * 100)}%</div></td>
       <td>
         <div className="row wrap"><span className="mono" style={{ minWidth: 80 }}>{fact}</span>
@@ -94,7 +97,7 @@ function Row({ t, c }: { t: Trial; c: Criterion }) {
         {c.amended && <div className="small" style={{ color: 'var(--rev)' }}>Amended by {c.amended.amendment}. Was: “{c.amended.from.text}” ({describeRule(c.amended.from.rule)})</div>}
         {[...errs, ...serverErrs].map((e) => <div className="err" key={e} role="alert">{e}</div>)}
         {impact && (
-          <div className="small" style={{ marginTop: 6, padding: '6px 8px', borderRadius: 8, background: impact.risky ? 'var(--not-bg)' : 'var(--brand-soft)' }}>
+          <div className="small" data-tour={waiting ? 'rule-impact' : undefined} style={{ marginTop: 6, padding: '6px 8px', borderRadius: 8, background: impact.risky ? 'var(--not-bg)' : 'var(--brand-soft)' }}>
             <b>Impact if approved:</b> {impact.states.length === 0 && impact.criteria.length === 0 ? `no patient changes (${impact.patients} checked).` : `${impact.criteria.length} criterion result(s) change; ${impact.states.length} patient(s) change trial state${impact.eligibleGained.length ? `, ${impact.eligibleGained.length} newly likely eligible` : ''}${impact.eligibleLost.length ? `, ${impact.eligibleLost.length} lose likely eligible` : ''}.`}
             {(impact.states.length > 0 || impact.criteria.length > 0) && <button className="btn sm" style={{ marginLeft: 8 }} aria-expanded={showImpact} onClick={() => setShowImpact(!showImpact)}>{showImpact ? 'Hide' : 'Details'}</button>}
             {showImpact && <ImpactList impact={impact} />}
@@ -102,9 +105,9 @@ function Row({ t, c }: { t: Trial; c: Criterion }) {
           </div>
         )}
       </td>
-      <td><span className={`chip ${c.review === 'approved' ? 'met' : c.review === 'rejected' ? 'notmet' : 'pending'}`}>{c.review}</span>{c.parseConfidence < 0.8 && <div className="chip unknown">low parse confidence</div>}</td>
+      <td><span data-tour={decided ? 'rule-reviewed' : undefined} className={`chip ${c.review === 'approved' ? 'met' : c.review === 'rejected' ? 'notmet' : 'pending'}`}>{c.review}</span>{c.parseConfidence < 0.8 && <div className="chip unknown">low parse confidence</div>}</td>
       <td><div className="row wrap">
-        <button className="btn sm pri" disabled={dis || errs.length > 0 || busy || blocked} title={dis ? PERM_HINT.rules : errs[0] ?? (blocked ? 'Acknowledge the impact first' : '')} onClick={approve}>{busy ? 'Checking…' : edited ? 'Save and approve' : 'Approve'}</button>
+        <button className="btn sm pri" data-tour={waiting ? 'rule-approve' : undefined} data-edited={edited ? 'yes' : 'no'} disabled={dis || errs.length > 0 || busy || blocked} title={dis ? PERM_HINT.rules : errs[0] ?? (blocked ? 'Acknowledge the impact first' : '')} onClick={approve}>{busy ? 'Checking…' : edited ? 'Save and approve' : 'Approve'}</button>
         <button className="btn sm dng" disabled={dis} onClick={() => (c.review === 'approved' ? setRejecting(true) : reject())}>Reject</button></div>
         {rejecting && (
           <Modal title={`Reject ${c.id}?`} onClose={closeReject}>

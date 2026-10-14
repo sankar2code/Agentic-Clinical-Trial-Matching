@@ -1,23 +1,28 @@
 'use client';
-import Link from 'next/link';
-import { TOUR, stepDone, tourProgress } from '@/lib/tour';
+import { TOUR, nextStep, stepDone, tourProgress } from '@/lib/tour';
 import { ROLE_INFO, useApp } from '@/lib/store';
+import { useGuide } from '@/components/TourGuide';
 import { Bar, Sec } from '@/components/ui';
 import type { Role } from '@/lib/types';
 
 const ACTS = ['At the point of care', 'Trust and safety', 'Running the program', 'Outcomes'] as const;
 
 export default function Tour() {
-  const { s, setRole, markTour, reset } = useApp();
+  const { s, markTour, reset } = useApp();
+  const { start } = useGuide();
   const { done, total } = tourProgress(s);
-  const nextStep = TOUR.find((t) => !stepDone(s, t));
+  const upNext = nextStep(s);
   return (
     <div>
       <h1>Guided tour</h1>
-      <p className="muted">{total} steps through the product, in the order a PRD reviewer would ask about them. Each step names the role to use, what to do, and what to notice. Steps tick themselves when the app sees you do the thing.</p>
+      <p className="muted">{total} steps through the product, in the order a PRD reviewer would ask about them. The guide opens each page for you, switches to the right role, rings the exact control to use, and moves on as soon as the app sees you do it. Most steps take one or two clicks.</p>
       <div className="card">
-        <div className="row between"><b>{done} of {total} done</b>{nextStep ? <Link className="btn pri sm" href={nextStep.href}>Next: {nextStep.title} →</Link> : <span className="chip met">Tour complete</span>}</div>
+        <div className="row between wrap">
+          <b>{done} of {total} done</b>
+          {upNext ? <button className="btn pri" onClick={() => start(upNext.id)}>{done === 0 ? 'Start the guided tour' : `Resume: ${upNext.title}`} →</button> : <span className="chip met">Tour complete</span>}
+        </div>
         <div style={{ marginTop: 8 }}><Bar v={done / total} tone="good" /></div>
+        <p className="small muted" style={{ margin: '8px 0 0' }}>You can pause the guide at any time with ✕ and pick it up again from the top bar.</p>
       </div>
 
       {ACTS.map((act) => (
@@ -26,7 +31,6 @@ export default function Tour() {
           <div className="col">
             {TOUR.filter((t) => t.act === act).map((t) => {
               const ok = stepDone(s, t);
-              const wrongRole = s.role !== t.role;
               return (
                 <div key={t.id} className="card tourstep">
                   <span className={`dot ${ok ? 'on' : ''}`} aria-label={ok ? 'done' : 'not done'}>{ok ? '✓' : TOUR.indexOf(t) + 1}</span>
@@ -36,8 +40,7 @@ export default function Tour() {
                     <p className="small muted" style={{ margin: 0 }}><b>Notice:</b> {t.look}</p>
                   </div>
                   <div className="col" style={{ alignItems: 'flex-end', gap: 4 }}>
-                    <Link className="btn sm pri" href={t.href}>Go</Link>
-                    {wrongRole && <button className="btn sm" onClick={() => setRole(t.role)}>Switch to {ROLE_INFO[t.role].title.toLowerCase()}</button>}
+                    <button className="btn sm pri" onClick={() => start(t.id)}>{ok ? 'Show me again' : 'Guide me'}</button>
                     {!t.done && <button className="btn sm" onClick={() => markTour(t.id, !s.tour[t.id])}>{s.tour[t.id] ? 'Unmark' : 'Mark done'}</button>}
                   </div>
                 </div>

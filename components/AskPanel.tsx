@@ -25,7 +25,7 @@ export default function AskPanel({ pid, run, ask, onEvidence }: { pid: string; r
           <button className="btn pri" disabled={blocked || !q.trim()} title={can('ask') ? '' : PERM_HINT.ask}>Ask</button>
         </form>
         <div className="row wrap" style={{ marginTop: 8 }}>
-          {PROMPTS.map((x) => <button key={x} className="btn sm" disabled={blocked} onClick={() => submit(x)}>{x}</button>)}
+          {PROMPTS.map((x) => <button key={x} data-tour={x === 'Find the missing values' ? 'ask-find-missing' : undefined} className="btn sm" disabled={blocked} onClick={() => submit(x)}>{x}</button>)}
         </div>
         <div className="row between small muted" style={{ marginTop: 8 }}>
           <span>Agent runs left today: <b>{quotaLeft}</b> of {AGENT_QUOTA}</span>
@@ -35,7 +35,7 @@ export default function AskPanel({ pid, run, ask, onEvidence }: { pid: string; r
       </div>
 
       {run && (
-        <div className="card">
+        <div className="card" data-tour="agent-run">
           <div className="row between"><b>“{run.q}”</b>{run.running && <span className="chip brand pulse">Running</span>}</div>
           <div className="steps" style={{ marginTop: 8 }} aria-live="polite">
             {run.steps.map((st) => (

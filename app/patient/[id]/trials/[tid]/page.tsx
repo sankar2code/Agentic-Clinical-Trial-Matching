@@ -45,7 +45,7 @@ export default function TrialDetail() {
       <p className="small"><Link href={`/patient/${id}/trials`}>← {p.name}</Link></p>
       <div className="row between wrap">
         <div><h1>{t.code} <StateChip s={m.state} /></h1><p className="muted">{t.title}</p></div>
-        <div className="col" style={{ alignItems: 'flex-end', gap: 2 }}><Link className="btn sm" href={`/patient/${id}/trials/${tid}/packet`}>Evidence packet</Link><span className="chip gray">{t.nct} · {t.phase} · {t.sponsor}</span><span className="small muted">{t.enrolled}/{t.target} enrolled · {t.ruleSet}</span></div>
+        <div className="col" style={{ alignItems: 'flex-end', gap: 2 }}><Link className="btn sm" data-tour="packet-link" href={`/patient/${id}/trials/${tid}/packet`}>Evidence packet</Link><span className="chip gray">{t.nct} · {t.phase} · {t.sponsor}</span><span className="small muted">{t.enrolled}/{t.target} enrolled · {t.ruleSet}</span></div>
       </div>
       {s.queryDate !== TODAY && <Banner tone="warn"><b>Simulated date {s.queryDate}.</b> This checklist is evaluated as of that date. Overrides, referrals and dismissals are paused until you reset the date from the top bar.</Banner>}
       {m.filterReason && <Banner tone="info"><b>Filtered out before evaluation:</b> {m.filterReason}. Criteria below are shown for transparency only.</Banner>}
@@ -54,7 +54,7 @@ export default function TrialDetail() {
       {dismissed && <Banner tone="info">Dismissed by {dismissed.by}: {dismissed.reason}. {dismissed.note} <button className="btn sm" disabled={!can('dismiss')} onClick={() => restore(id, tid)}>Restore</button></Banner>}
       {unevaluable > 0 && <Banner tone="rev"><b>{unevaluable} rule{unevaluable > 1 ? 's are' : ' is'} not evaluable</b> (awaiting reviewer approval, rejected, or failed validation). {unevaluable > 1 ? 'They are' : 'It is'} skipped, so this trial cannot be called eligible until {unevaluable > 1 ? 'they are' : 'it is'} approved.</Banner>}
 
-      <div className="card" style={{ marginBottom: 12 }}>
+      <div className="card" style={{ marginBottom: 12 }} data-tour="checklist-summary">
         <div className="row wrap"><StatusChip s="met" n={m.counts.met} /><StatusChip s="notmet" n={m.counts.notmet} /><StatusChip s="unknown" n={m.counts.unknown} /><StatusChip s="review" n={m.counts.review} />{unevaluable > 0 && <StatusChip s="pending" n={unevaluable} />}
           <span className="grow" /><span className="small muted">{Math.round(m.fit * 100)}% met</span></div>
         <div style={{ marginTop: 8 }}><Bar v={m.fit} tone={m.state === 'eligible' ? 'good' : m.state === 'ineligible' ? 'bad' : 'warn'} /></div>
@@ -70,12 +70,12 @@ export default function TrialDetail() {
               <tbody>
                 {m.results.filter((r) => r.criterion.type === type).map((r) => (
                   <tr key={r.criterion.id}>
-                    <td><StatusChip s={r.status} />{r.override && <div className="small muted">overridden</div>}</td>
+                    <td><StatusChip s={r.status} />{r.override && <div className="small muted" data-tour={r.override.citation ? 'override-done' : undefined}>overridden</div>}</td>
                     <td><div>{r.criterion.text}</div>
                       <div className="small muted">{r.message}</div>
                       {r.nextStep && ['unknown', 'review'].includes(r.status) && <div className="small" style={{ color: 'var(--unk)' }}>Next step: {r.nextStep}</div>}
                       <div className="row wrap" style={{ marginTop: 4 }}>
-                        {r.stale && <span className="chip unknown">stale</span>}{r.conflict && <span className="chip review">conflicting sources</span>}
+                        {r.stale && <span className="chip unknown">stale</span>}{r.conflict && <span className="chip review" data-tour="conflict-chip">conflicting sources</span>}
                         {r.lowConfidence && !r.conflict && <span className="chip unknown">verify extraction</span>}
                         {r.attested && <span className="chip review">clinician-attested</span>}
                         {r.evidence.some((e) => e.by === 'agent') && <span className="chip brand">agent-resolved</span>}
@@ -88,7 +88,7 @@ export default function TrialDetail() {
                       {r.evidence.length === 0 && !r.override?.citation ? <span className="muted">No citation (cannot be Met)</span> : r.evidence.map((e, i) => (
                         <div key={i} style={{ marginBottom: 4 }}>
                           <b>{fmtVal(e.key, e.value)}</b> <span className="muted">· {e.date}{e.confidence !== undefined ? ` · ${Math.round(e.confidence * 100)}%` : ''}</span><br />
-                          <a href="#" onClick={(ev) => { ev.preventDefault(); track('evidence.open', { patientId: id, trialId: tid, key: e.key }); setEvi(e); }}>{e.source.label}</a>
+                          <a href="#" data-tour="evidence-link" onClick={(ev) => { ev.preventDefault(); track('evidence.open', { patientId: id, trialId: tid, key: e.key }); setEvi(e); }}>{e.source.label}</a>
                         </div>
                       ))}
                     </td>
@@ -96,7 +96,7 @@ export default function TrialDetail() {
                       {r.override ? (
                         <button className="btn sm" disabled={!can('override')} onClick={() => clearOverride(id, tid, r.criterion.id)}>Undo</button>
                       ) : (
-                        <button className="btn sm" disabled={!can('override') || r.status === 'pending'} title={can('override') ? '' : PERM_HINT.override} onClick={() => setOv(r)}>Override</button>
+                        <button className="btn sm" data-tour={`override-${r.status}`} disabled={!can('override') || r.status === 'pending'} title={can('override') ? '' : PERM_HINT.override} onClick={() => setOv(r)}>Override</button>
                       )}
                     </td>
                   </tr>
@@ -118,19 +118,19 @@ export default function TrialDetail() {
       )}
 
       <h2>Referral to coordinator</h2>
-      <div className="card">
+      <div className="card" data-tour="referral-card">
         {!ref ? (
           <>
             <p className="muted">{lastRejected ? 'The last draft was rejected; nothing was sent. ' : ''}The agent drafts from the engine’s evaluated criteria only. You edit and approve before anything reaches the coordinator.</p>
-            <button className="btn pri" disabled={!!m.filterReason || m.state === 'ineligible' || paused} title={paused ? 'Drafts are paused while the date is simulated. Reset it to draft a referral.' : m.state === 'ineligible' ? 'A not-eligible trial cannot be referred' : ''} onClick={() => draft(id, tid, draftReferralText(p, m, versionStamp))}>Draft referral</button>
+            <button className="btn pri" data-tour="referral-draft" disabled={!!m.filterReason || m.state === 'ineligible' || paused} title={paused ? 'Drafts are paused while the date is simulated. Reset it to draft a referral.' : m.state === 'ineligible' ? 'A not-eligible trial cannot be referred' : ''} onClick={() => draft(id, tid, draftReferralText(p, m, versionStamp))}>Draft referral</button>
           </>
         ) : (
           <>
             <div className="row between"><b>{ref.status === 'draft' ? 'Draft: waiting for your approval' : 'Approved and released'}</b><span className={`chip ${ref.status === 'draft' ? 'unknown' : 'met'}`}>{ref.status}</span></div>
-            <div style={{ marginTop: 8 }}><DraftEditor label="Referral body" value={ref.body} disabled={ref.status !== 'draft' || !can('approveReferral')} onCommit={(v) => editReferral(ref.id, v)} /></div>
+            <div style={{ marginTop: 8 }}><DraftEditor label="Referral body" tour="referral-body" value={ref.body} disabled={ref.status !== 'draft' || !can('approveReferral')} onCommit={(v) => editReferral(ref.id, v)} /></div>
             {ref.status === 'draft' && (
               <div className="row" style={{ marginTop: 8 }}>
-                <button className="btn pri" disabled={!can('approveReferral')} title={can('approveReferral') ? '' : PERM_HINT.approveReferral} onClick={() => decideReferral(ref.id, 'approved')}>Approve and send</button>
+                <button className="btn pri" data-tour="referral-approve" disabled={!can('approveReferral')} title={can('approveReferral') ? '' : PERM_HINT.approveReferral} onClick={() => decideReferral(ref.id, 'approved')}>Approve and send</button>
                 <button className="btn dng" disabled={!can('approveReferral')} onClick={() => decideReferral(ref.id, 'rejected')}>Reject</button>
                 {ref.edited && <span className="muted small">edited by clinician</span>}
               </div>
@@ -164,7 +164,7 @@ function OverrideModal({ r, onClose, onSave }: { r: CritResult; onClose: () => v
         <Field label="Set to"><select value={to} onChange={(e) => setTo(e.target.value as 'met')}><option value="met">Met</option><option value="notmet">Not met</option></select></Field>
         {needCite && (
           <Field label="Citation (required for Met)" hint="A criterion cannot be Met without a source. Name the document, date and where the value appears.">
-            <input value={citation} onChange={(e) => setCitation(e.target.value)} placeholder="e.g. Outside pathology report 2026-08-01, page 2, PD-L1 TPS 60%" aria-invalid={!citeOk} />
+            <input data-tour="override-citation" value={citation} onChange={(e) => setCitation(e.target.value)} placeholder="e.g. Outside pathology report 2026-08-01, page 2, PD-L1 TPS 60%" aria-invalid={!citeOk} />
             {!citeOk && <div className="err">Enter at least {MIN_CITATION} characters naming the source.</div>}
           </Field>
         )}

@@ -52,7 +52,7 @@ export default function PathTab({ p, matches, trials, ctx, today, searched, canA
   );
 
   return (
-    <div>
+    <div data-tour="path-panel">
       <Banner tone="info"><b>Engine-derived, nothing guessed.</b> Each step comes from a criterion that is Unknown, in conflict, awaiting a rule, or failed for a reason a clinician could change. Which tests or medication changes are appropriate remains a clinical decision.</Banner>
 
       <Sec title="Next best actions" count={ranked.length} note="Ranked by trials finished, then trials helped, then how quick it is" />
